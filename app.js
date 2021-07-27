@@ -17,39 +17,36 @@ const bot = linebot({
 bot.on('message', async (event) => {
   try {
     console.log(event)
-    if (event.message.type === 'message') {
-      await File.create({
-        userId: event.source.userId,
-        image: event.message.text
+    if (event.message.text === '回傳') {
+      let msg = await File.findOne({
+        raw: true,
+        nest: true,
+        order: [['createdAt', 'DESC']],
+        where: {
+          userId: event.source.userId
+        }
       })
-      await event.reply("已新增至資料庫")
-    } else if (event.message.text === '回傳') {
-      let msg = '已收到回傳訊息'
-      await event.reply(msg)
-      console.log('service sent msg to ', event.source.userId)
-      console.log('msg:', msg)
+      await event.reply(msg.image)
     }
 
     if (event.message.type === 'image') {
       imgur.setClientId(process.env.IMGUR_CLIENT_ID)
-      let imageLink = ''
       event.message.content().then(function (content) {
         imgur
           .uploadBase64(content.toString('base64'))
           .then((json) => {
-            imageLink = json.link
             console.log(json.link)
+            return File.create({
+              userId: event.source.userId,
+              image: json.link
+            })
           })
           .catch((err) => {
             console.error(err.message)
           })
       })
-      await File.create({
-        userId: event.source.userId,
-        image: imageLink
-      })
+      await event.reply("已新增至資料庫")
     }
-
   } catch (error) {
     console.log(error)
   }
