@@ -1,30 +1,55 @@
 const linebot = require('linebot')
 const express = require('express')
+const imgur = require('imgur')
 const db = require('./models')
 const { File } = db
 
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config()
+}
+
 const bot = linebot({
-  channelId: '1656250411',
-  channelSecret: 'c6a39550ffc6cd803d6e08b73a50cd00',
-  channelAccessToken: 'yxUMOHb0ATretvjfrQbuk7oc2WPFRECIDs7RsRP4D2C3b8iI5kRxExwgcTPTTfb0gs4S4mjVUsoEYQJt2Tl+YrLz4LDfJWYzy0NUoY1Dj8Klh4oQ1cCrlvWoZxKDJTgiwURVUtL69I0BsSgP5Pk+WgdB04t89/1O/w1cDnyilFU='
+  channelId: process.env.channelId,
+  channelSecret: process.env.channelSecret,
+  channelAccessToken: process.env.channelAccessToken
 })
 
 bot.on('message', async (event) => {
   try {
     console.log(event)
-    if (event.type === 'message') {
+    if (event.message.type === 'message') {
       await File.create({
         userId: event.source.userId,
         image: event.message.text
       })
       await event.reply("已新增至資料庫")
-    }
-    if (event.message.text === '回傳') {
+    } else if (event.message.text === '回傳') {
       let msg = '已收到回傳訊息'
       await event.reply(msg)
       console.log('service sent msg to ', event.source.userId)
       console.log('msg:', msg)
     }
+
+    if (event.message.type === 'image') {
+      imgur.setClientId(process.env.IMGUR_CLIENT_ID)
+      let imageLink = ''
+      event.message.content().then(function (content) {
+        imgur
+          .uploadBase64(content.toString('base64'))
+          .then((json) => {
+            imageLink = json.link
+            console.log(json.link)
+          })
+          .catch((err) => {
+            console.error(err.message)
+          })
+      })
+      await File.create({
+        userId: event.source.userId,
+        image: imageLink
+      })
+    }
+
   } catch (error) {
     console.log(error)
   }
