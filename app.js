@@ -9,6 +9,15 @@ const bot = linebot({
 
 bot.on('message', function (event) {
   console.log(event)
+  if (event.message.text === '回傳') {
+    let msg = '已收到回傳訊息'
+    event.reply(msg).then(function (data) {
+      console.log('service sent msg to ', event.source.userId)
+      console.log('msg:', msg)
+    }).catch(function (error) {
+      console.log('error')
+    })
+  }
 })
 
 const app = express()
