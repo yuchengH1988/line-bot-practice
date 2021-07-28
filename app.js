@@ -27,7 +27,7 @@ bot.on('message', async (event) => {
           userId: event.source.userId
         }
       })
-      if (msg.image) {
+      if (msg) {
         await event.reply({
           type: 'image',
           originalContentUrl: msg.image,
