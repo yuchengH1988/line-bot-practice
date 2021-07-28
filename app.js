@@ -26,7 +26,15 @@ bot.on('message', async (event) => {
           userId: event.source.userId
         }
       })
-      await event.reply(msg.image)
+      if (msg.image) {
+        await event.reply({
+          type: 'image',
+          originalContentUrl: msg.image,
+          previewImageUrl: msg.image
+        })
+      } else {
+        event.reply("資料庫內目前找不到相關資料")
+      }
     }
 
     if (event.message.type === 'image') {
@@ -36,6 +44,7 @@ bot.on('message', async (event) => {
           .uploadBase64(content.toString('base64'))
           .then((json) => {
             console.log(json.link)
+            event.reply("已新增至資料庫")
             return File.create({
               userId: event.source.userId,
               image: json.link
@@ -43,9 +52,9 @@ bot.on('message', async (event) => {
           })
           .catch((err) => {
             console.error(err.message)
+            event.reply("資料新增失敗，請稍後再試")
           })
       })
-      await event.reply("已新增至資料庫")
     }
   } catch (error) {
     console.log(error)
