@@ -17,6 +17,7 @@ const bot = linebot({
 bot.on('message', async (event) => {
   try {
     console.log(event)
+    //判斷使用者輸入文字 回傳 || 非回傳
     if (event.message.text === '回傳') {
       let msg = await File.findOne({
         raw: true,
@@ -33,8 +34,10 @@ bot.on('message', async (event) => {
           previewImageUrl: msg.image
         })
       } else {
-        event.reply("資料庫內目前找不到相關資料")
+        await event.reply("資料庫內目前找不到相關資料")
       }
+    } else if (event.message.type === 'text') {
+      await event.reply("輸入'回傳'，可回傳你最後一張發給我的圖片")
     }
 
     if (event.message.type === 'image') {
